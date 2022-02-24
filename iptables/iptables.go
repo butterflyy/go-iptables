@@ -64,6 +64,7 @@ const (
 )
 
 type IPTables struct {
+	nspid             string
 	path              string
 	proto             Protocol
 	hasCheck          bool
@@ -154,6 +155,12 @@ func New(opts ...option) (*IPTables, error) {
 func NewWithProtocol(proto Protocol) (*IPTables, error) {
 	return New(IPFamily(proto), Timeout(0))
 }
+
+// Proto returns the protocol used by this IPTables.
+func (ipt *IPTables) SetNspid(nspid string) {
+	ipt.nspid = nspid
+}
+
 
 // Proto returns the protocol used by this IPTables.
 func (ipt *IPTables) Proto() Protocol {
@@ -494,7 +501,7 @@ func (ipt *IPTables) run(args ...string) error {
 // runWithOutput runs an iptables command with the given arguments,
 // writing any stdout output to the given writer
 func (ipt *IPTables) runWithOutput(args []string, stdout io.Writer) error {
-	args = append([]string{ipt.path}, args...)
+	args = append([]string{ipt.path, ipt.nspid}, args...)
 	if ipt.hasWait {
 		args = append(args, "--wait")
 		if ipt.timeout != 0 && ipt.waitSupportSecond {
